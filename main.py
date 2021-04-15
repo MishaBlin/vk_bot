@@ -1,9 +1,9 @@
-import json
 import time
-
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
+
+from vk_api.keyboard import VkKeyboardColor, VkKeyboard
 
 
 def auth_handler():
@@ -30,7 +30,7 @@ def run_test(event, vk):
         time.sleep(1)
         vk.messages.send(user_id=event.obj.message['from_id'],
                          message="Первый вопрос: сколько у котов лап?",
-                         random_id=random.randint(0, 2 ** 64))
+                         random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
         test_question += 1
     elif test_question == 1:
         time.sleep(1)
@@ -46,7 +46,7 @@ def run_test(event, vk):
         time.sleep(1)
         vk.messages.send(user_id=event.obj.message['from_id'],
                          message="Следующий вопрос: каково минимальное количество часов сна у котов в сутки?",
-                         random_id=random.randint(0, 2 ** 64))
+                         random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
         test_question += 1
     elif test_question == 2:
         time.sleep(1)
@@ -62,7 +62,7 @@ def run_test(event, vk):
         time.sleep(1)
         vk.messages.send(user_id=event.obj.message['from_id'],
                          message="Последний вопрос: сколько существует пород кошек?",
-                         random_id=random.randint(0, 2 ** 64))
+                         random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
         test_question += 1
 
     elif test_question == 3:
@@ -77,13 +77,14 @@ def run_test(event, vk):
                              message="Неверно! Существует около 300 пород кошек!",
                              random_id=random.randint(0, 2 ** 64))
         time.sleep(1)
+        test_active = False
+        test_question = 0
         vk.messages.send(user_id=event.obj.message['from_id'],
                          message=f"Тест закончен! Вы набрали {score} баллов из 3!",
-                         random_id=random.randint(0, 2 ** 64))
+                         random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
         if score == 3:
             time.sleep(1)
             user = vk.users.get(user_id=event.obj.message['from_id'], fields='sex')[0]
-            print(user)
             if 'sex' in user:
                 if user['sex'] == 2:
                     vk.messages.send(user_id=event.obj.message['from_id'],
@@ -98,8 +99,6 @@ def run_test(event, vk):
                                  message=f"Вы молодец!",
                                  random_id=random.randint(0, 2 ** 64))
         score = 0
-        test_question = 0
-        test_active = False
 
 
 def get_random_fact():
@@ -114,7 +113,7 @@ def get_random_atch():
     vk_session = vk_api.VkApi(login, password, auth_handler=auth_handler)
 
     try:
-        vk_session.auth(token_only=True, )
+        vk_session.auth(token_only=True)
     except vk_api.AuthError as error_msg:
         print(error_msg)
         return
@@ -124,22 +123,48 @@ def get_random_atch():
     return random.choice(wall['items'])['attachments'][-1]['photo']
 
 
+def _answer_options_for_test(opt1, opt2, opt3, opt4):
+    keyboard = VkKeyboard(inline=True)
+    keyboard.add_button(opt1, color=VkKeyboardColor.NEGATIVE)
+    keyboard.add_button(opt2, color=VkKeyboardColor.POSITIVE)
+    keyboard.add_line()
+    keyboard.add_button(opt3, color=VkKeyboardColor.PRIMARY)
+    keyboard.add_button(opt4, color=VkKeyboardColor.SECONDARY)
+    return keyboard
+
+
+def new_keyboard():
+    global test_active, test_question
+    if test_active:
+        if test_question == 0:
+            keyboard = _answer_options_for_test('4 лапы', '5 лап', '12 лап', '8 лап')
+        elif test_question == 1:
+            keyboard = _answer_options_for_test('2 часа', '8 часов', '24 часа', '12 часов')
+        elif test_question == 2:
+            keyboard = _answer_options_for_test('500 пород', '300 пород', '1000 пород', '700 пород')
+    else:
+        keyboard = VkKeyboard(one_time=False)
+        keyboard.add_button("Картинка", color=VkKeyboardColor.NEGATIVE)
+        keyboard.add_button("Факт", color=VkKeyboardColor.POSITIVE)
+        keyboard.add_line()
+        keyboard.add_button("Тест", color=VkKeyboardColor.PRIMARY)
+
+    return keyboard
+
+
 TOKEN = "c93668582bede75b8ae9c46c6083476ebfe645d602d77df334e7f3e02cfc463f5f7f75b1a93a5cb39b1f7"
 vk_session = vk_api.VkApi(token=TOKEN, auth_handler=auth_handler)
 test_question = 0
 score = 0
 test_active = False
 
-with open('keyboard.json', 'r') as file:
-    data_keyboard = json.load(file)
-
 
 def main():
     global test_active
+    vk = vk_session.get_api()
     longpoll = VkBotLongPoll(vk_session, "203940448")
     for event in longpoll.listen():
         if event.type == VkBotEventType.MESSAGE_NEW:
-            vk = vk_session.get_api()
             if test_active:
                 run_test(event, vk)
             else:
@@ -151,26 +176,23 @@ def main():
                     message_text = event.obj.message['text'].lower()
                     if 'help' in message_text:
                         vk.messages.send(user_id=event.obj.message['from_id'],
-                                         message="""
-                                                 Доступные команды:
-                                                 'Картинка' — получить случайную картинку кота,
-                                                 'Факт' — получить случайный факт о котах,
-                                                 'Тест' — пройти тест про котов.
-                                                 """,
-                                         random_id=random.randint(0, 2 ** 64), keyboard=data_keyboard)
+                                         message="Доступные команды:\n'Картинка' — получить случайную картинку кота,"
+                                                 "\n'Факт' — получить случайный факт о котах,\n'Тест' — пройти тест "
+                                                 "про котов.",
+                                         random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
 
                     elif 'картинка' in message_text:
                         photo = get_random_atch()
                         vk.messages.send(user_id=event.obj.message['from_id'],
                                          message=f"Случайная картинка: ",
                                          attachment=f'photo{photo["owner_id"]}_{photo["id"]}',
-                                         random_id=random.randint(0, 2 ** 64))
+                                         random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
 
                     elif 'факт' in message_text:
                         fact = get_random_fact()
                         vk.messages.send(user_id=event.obj.message['from_id'],
                                          message=f"Случайный факт про котов: {fact}",
-                                         random_id=random.randint(0, 2 ** 64))
+                                         random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
 
                     elif 'тест' in message_text:
                         test_active = True
@@ -178,15 +200,15 @@ def main():
 
                     else:
                         vk.messages.send(user_id=event.obj.message['from_id'],
-                                         message='''Извините, я Вас не понимаю.
-                                                 Чтобы посмотреть список команд введите "help"''',
-                                         random_id=random.randint(0, 2 ** 64))
+                                         message='Извините, я Вас не понимаю.\nЧтобы посмотреть список команд введите '
+                                                 '"help".',
+                                         random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
                 except Exception as e:
                     print(e)
                     vk.messages.send(user_id=event.obj.message['from_id'],
-                                     message='''Возникла ошибка на стороне сервера.
-                                                Чтобы посмотреть список команд введите "help"''',
-                                     random_id=random.randint(0, 2 ** 64))
+                                     message='Возникла ошибка на стороне сервера.\nЧтобы посмотреть список команд '
+                                             'введите "help".',
+                                     random_id=random.randint(0, 2 ** 64), keyboard=new_keyboard().get_keyboard())
 
 
 if __name__ == '__main__':
