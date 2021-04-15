@@ -1,3 +1,4 @@
+import json
 import time
 
 import vk_api
@@ -129,6 +130,9 @@ test_question = 0
 score = 0
 test_active = False
 
+with open('keyboard.json', 'r') as file:
+    data_keyboard = json.load(file)
+
 
 def main():
     global test_active
@@ -153,7 +157,7 @@ def main():
                                                  'Факт' — получить случайный факт о котах,
                                                  'Тест' — пройти тест про котов.
                                                  """,
-                                         random_id=random.randint(0, 2 ** 64))
+                                         random_id=random.randint(0, 2 ** 64), keyboard=data_keyboard)
 
                     elif 'картинка' in message_text:
                         photo = get_random_atch()
