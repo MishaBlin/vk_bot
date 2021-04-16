@@ -20,9 +20,9 @@ def _get_random_atch():
     return random.choice(wall['items'])['attachments'][-1]['photo']
 
 
-def send_photo(event, vk, keyboard):
+def send_photo(from_id, vk, keyboard):
     photo = _get_random_atch()
-    vk.messages.send(user_id=event.obj.message['from_id'],
+    vk.messages.send(user_id=from_id,
                      message=f"Случайная картинка: ",
                      attachment=f'photo{photo["owner_id"]}_{photo["id"]}',
                      random_id=random.randint(0, 2 ** 64), keyboard=keyboard.get_keyboard())
