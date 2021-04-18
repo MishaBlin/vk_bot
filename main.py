@@ -1,4 +1,3 @@
-import schedule
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
@@ -31,7 +30,9 @@ def main():
                                      'reminder_manage': False,
                                      'reminders': [],
                                      'first_reminder_run': True,
-                                     'creation': False}
+                                     'creation': False,
+                                     'getting_times': False,
+                                     'amount_of_feeds': 0}
             if ids_data[from_id]["test_active"]:
                 test.run_test((message_text, from_id), vk, ids_data)
 
