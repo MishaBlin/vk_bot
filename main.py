@@ -34,7 +34,8 @@ def main():
                                      'first_reminder_run': True,
                                      'creation': False,
                                      'getting_times': False,
-                                     'amount_of_feeds': 0}
+                                     'amount_of_feeds': 0,
+                                     'deleting_reminders': False}
             if ids_data[from_id]["test_active"]:
                 test.run_test((message_text, from_id), vk, ids_data)
 
