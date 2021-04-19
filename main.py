@@ -23,6 +23,8 @@ def main():
         if event.type == VkBotEventType.MESSAGE_NEW:
             from_id = event.obj.message['from_id']
             message_text = event.obj.message['text'].lower()
+            user = vk.users.get(user_id=from_id)[0]
+            print(f"connected to user {user['first_name']} {user['last_name']}")
             if from_id not in ids_data:
                 ids_data[from_id] = {'test_active': False,
                                      "score": 0,
