@@ -2,7 +2,7 @@ import datetime
 import random
 import traceback
 
-from functions import keyboards
+from functions import keyboards, fallback
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
@@ -44,12 +44,19 @@ def create_reminder(from_id, message_text, ids_data, vk):
                                      keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
                     ids_data[from_id]['creation'] = False
                     ids_data[from_id]['getting_times'] = False
+
+                elif "выход" in message_text:
+                    fallback.fallback(ids_data, from_id, vk, ("creation", "getting_times"))
+
                 else:
                     vk.messages.send(user_id=from_id,
                                      message='Пожалуйста, введите корректное значение для каждого кормления в формате '
                                              '"hh-mm" через запятую.',
                                      random_id=random.randint(0, 2 ** 64),
                                      keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
+
+            elif "выход" in message_text:
+                fallback.fallback(ids_data, from_id, vk, ("creation",))
 
             else:
                 if 0 < int(message_text) <= 9:
@@ -59,6 +66,7 @@ def create_reminder(from_id, message_text, ids_data, vk):
                                      message='Введите время для каждого кормления в формате "hh-mm" через запятую.',
                                      random_id=random.randint(0, 2 ** 64),
                                      keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
+
                 else:
                     vk.messages.send(user_id=from_id,
                                      message="Пожалуйста, введите корректное значение (Рекомендуется вводить "
@@ -94,6 +102,9 @@ def get_reminders(ids_data, from_id):
 def deleting_reminders(ids_data, from_id, message_text, vk):
     try:
         if ids_data[from_id]['deleting_reminders']:
+            if "выход" in message_text:
+                fallback.fallback(ids_data, from_id, vk, ('deleting_reminders',))
+                return
             clear_line = ''
             for symbol in message_text:
                 if symbol != ' ':
@@ -115,6 +126,7 @@ def deleting_reminders(ids_data, from_id, message_text, vk):
                              random_id=random.randint(0, 2 ** 64),
                              keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
             ids_data[from_id]['deleting_reminders'] = True
+
     except Exception:
         traceback.print_exc()
         vk.messages.send(user_id=from_id,
@@ -136,7 +148,7 @@ def manage(message_data, ids_data, vk):
                                  '1. "Создать" — создать новое напоминание,\n'
                                  '2. "Удалить" — удаление имеющихся напоминаний,\n'
                                  '3. "Мои напоминания" — просмотр списка имеющихся напоминаний,\n'
-                                 '4. "Выход" — выйти из Центра напоминий.',
+                                 '4. "Выход" — выйти из Центра напоминаний.',
                          random_id=random.randint(0, 2 ** 64),
                          keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
         ids_data[from_id]['first_reminder_run'] = False

@@ -1,3 +1,5 @@
+import traceback
+
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
@@ -46,9 +48,11 @@ def main():
                 try:
                     if 'help' in message_text:
                         vk.messages.send(user_id=from_id,
-                                         message="Доступные команды:\n'Картинка' — получить случайную картинку кота,"
-                                                 "\n'Факт' — получить случайный факт о котах,\n'Тест' — пройти тест "
-                                                 "про котов.",
+                                         message='Доступные команды:\n'
+                                                 '"Картинка" — получить случайную картинку кота,\n'
+                                                 '"Факт" — получить случайный факт о котах,\n'
+                                                 '"Тест" — пройти тест про котов,'
+                                                 '"Центр уведомлений" — управление уведомлениями.',
                                          random_id=random.randint(0, 2 ** 64),
                                          keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
 
@@ -73,8 +77,8 @@ def main():
                                          random_id=random.randint(0, 2 ** 64),
                                          keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
 
-                except Exception as e:
-                    print(e)
+                except Exception:
+                    traceback.print_exc()
                     vk.messages.send(user_id=from_id,
                                      message='Возникла ошибка на стороне сервера.\nЧтобы посмотреть список команд '
                                              'введите "help".',
