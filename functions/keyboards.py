@@ -37,5 +37,7 @@ def new_keyboard(from_id, ids_data):
         keyboard.add_line()
         keyboard.add_button("Центр напоминаний", color=VkKeyboardColor.PRIMARY)
         keyboard.add_button("Тест", color=VkKeyboardColor.SECONDARY)
+        keyboard.add_line()
+        keyboard.add_button("Переводчик", color=VkKeyboardColor.PRIMARY)
 
     return keyboard

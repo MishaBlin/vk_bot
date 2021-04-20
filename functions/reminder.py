@@ -140,7 +140,7 @@ def manage(message_data, ids_data, vk):
     message_text = message_data[0]
     from_id = message_data[1]
 
-    if ids_data[from_id]['first_reminder_run']:
+    if ids_data[from_id]['first_run']:
         vk.messages.send(user_id=from_id,
                          message="Добро пожаловать в центр напоминаний!\n"
                                  "Напоминания помогут вам не забывать вовремя кормить кота!\n\n"
@@ -151,7 +151,7 @@ def manage(message_data, ids_data, vk):
                                  '4. "Выход" — выйти из Центра напоминаний.',
                          random_id=random.randint(0, 2 ** 64),
                          keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
-        ids_data[from_id]['first_reminder_run'] = False
+        ids_data[from_id]['first_run'] = False
     else:
         if ids_data[from_id]['creation']:
             create_reminder(from_id, message_text, ids_data, vk)
@@ -179,7 +179,7 @@ def manage(message_data, ids_data, vk):
 
         elif 'выход' in message_text:
             ids_data[from_id]["reminder_manage"] = False
-            ids_data[from_id]['first_reminder_run'] = True
+            ids_data[from_id]['first_run'] = True
             vk.messages.send(user_id=from_id,
                              message="Вы вышли из центра напоминаний",
                              random_id=random.randint(0, 2 ** 64),

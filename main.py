@@ -3,7 +3,7 @@ import traceback
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
-from functions import random_picture, random_fact, test, keyboards, reminder
+from functions import random_picture, random_fact, test, keyboards, reminder, translator
 
 
 def auth_handler():
@@ -33,16 +33,20 @@ def main():
                                      "test_question": 0,
                                      'reminder_manage': False,
                                      'reminders': [],
-                                     'first_reminder_run': True,
+                                     'first_run': True,
                                      'creation': False,
                                      'getting_times': False,
                                      'amount_of_feeds': 0,
-                                     'deleting_reminders': False}
+                                     'deleting_reminders': False,
+                                     'translation_mode': False}
             if ids_data[from_id]["test_active"]:
                 test.run_test((message_text, from_id), vk, ids_data)
 
             elif ids_data[from_id]["reminder_manage"]:
                 reminder.manage((message_text, from_id), ids_data, vk)
+
+            elif ids_data[from_id]['translation_mode']:
+                translator.translate(ids_data, from_id, vk, message_text)
 
             else:
                 try:
@@ -52,7 +56,8 @@ def main():
                                                  '"Картинка" — получить случайную картинку кота,\n'
                                                  '"Факт" — получить случайный факт о котах,\n'
                                                  '"Тест" — пройти тест про котов,'
-                                                 '"Центр уведомлений" — управление уведомлениями.',
+                                                 '"Центр уведомлений" — управление уведомлениями,'
+                                                 '"Переводчик" — войти в переводчик на кошачий.',
                                          random_id=random.randint(0, 2 ** 64),
                                          keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
 
@@ -69,6 +74,16 @@ def main():
                     elif 'напомин' in message_text:
                         ids_data[from_id]["reminder_manage"] = True
                         reminder.manage((message_text, from_id), ids_data, vk)
+
+                    elif 'перев' in message_text:
+                        ids_data[from_id]['translation_mode'] = True
+                        vk.messages.send(user_id=from_id,
+                                         message='Добро пожаловать в переводчик на кошачий язык.\n'
+                                                 'Вы можете ввести любую фразу, она будет переведена на кошачий язык.\n'
+                                                 'Чтобы выйти из переводчика, введите "Выход"',
+                                         random_id=random.randint(0, 2 ** 64),
+                                         keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
+                        translator.translate(ids_data, from_id, vk, message_text)
 
                     else:
                         vk.messages.send(user_id=from_id,
