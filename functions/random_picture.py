@@ -8,7 +8,7 @@ from main import auth_handler
 
 def _get_random_atch():
     try:
-        login, password = '89129858385', 'MihailkaOther2'
+        login, password = '89194980332', 'Mihailka0'
         vk_session = vk_api.VkApi(login, password, auth_handler=auth_handler)
 
         try:
