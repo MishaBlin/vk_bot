@@ -3,6 +3,7 @@ import random
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
+# keyboard for test function
 def _answer_options_for_test(options):
     keyboard = VkKeyboard(inline=True)
     buttons_in_line = 0
@@ -16,6 +17,7 @@ def _answer_options_for_test(options):
     return keyboard
 
 
+# main keyboard function
 def new_keyboard(from_id, ids_data):
     test_question = ids_data[from_id]["test_question"]
     test_active = ids_data[from_id]["test_active"]

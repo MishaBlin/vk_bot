@@ -6,9 +6,10 @@ import vk_api
 from main import auth_handler
 
 
+# getting random picture function
 def _get_random_atch():
     try:
-        login, password = '89194980332', 'Mihailka0'
+        login, password = '89129858385', 'MihailkaOther2'
         vk_session = vk_api.VkApi(login, password, auth_handler=auth_handler)
 
         try:
@@ -28,6 +29,7 @@ def _get_random_atch():
         traceback.print_exc()
 
 
+# sending random picture
 def send_photo(from_id, vk, keyboard):
     photo = _get_random_atch()
     vk.messages.send(user_id=from_id,

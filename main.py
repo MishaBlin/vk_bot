@@ -7,29 +7,35 @@ from obscene_words_filter import get_default_filter
 from functions import random_picture, random_fact, test, keyboards, reminder, translator
 
 
+# two-factor auth handler
 def auth_handler():
     key = input("Enter authentication code: ")
     remember_device = True
     return key, remember_device
 
 
+# setting group token
 TOKEN = "c93668582bede75b8ae9c46c6083476ebfe645d602d77df334e7f3e02cfc463f5f7f75b1a93a5cb39b1f7"
 vk_session = vk_api.VkApi(token=TOKEN, auth_handler=auth_handler)
 
+# setting data dict for users
 ids_data = {}
 
 
 def main():
+    # filter for swearwords
     profanity_filter = get_default_filter()
+    # vk api
     vk = vk_session.get_api()
     longpoll = VkBotLongPoll(vk_session, "203940448")
+    # main message loop
     for event in longpoll.listen():
         if event.type == VkBotEventType.MESSAGE_NEW:
+            # getting user id and message text
             from_id = event.obj.message['from_id']
             message_text = event.obj.message['text'].lower()
-            user = vk.users.get(user_id=from_id)[0]
-            print(f"connected to user {user['first_name']} {user['last_name']}")
             if from_id not in ids_data:
+                # user init
                 ids_data[from_id] = {'test_active': False,
                                      "score": 0,
                                      "test_question": 0,
@@ -42,19 +48,11 @@ def main():
                                      'deleting_reminders': False,
                                      'translation_mode': False,
                                      'profanity': 0}
+            # checking for swear words
             if profanity_filter.is_word_bad(message_text):
                 if ids_data[from_id]['profanity'] == 0:
                     vk.messages.send(user_id=from_id,
-                                     message='Своими словами вы позорите честь и достоинство всех членов кошачьей '
-                                             'группы! '
-                                             'Разве не стыдно вам сквернословить в присутствии котов, '
-                                             'вы бессовестный, '
-                                             'жалкий и просто омерзительный человек. Если подобные выражения будет '
-                                             'замечено повторно, ваше сообщение будет передано в администрацию '
-                                             'сообщества '
-                                             'котов, где будет решена ваша судьба: или же вы будете прощены или же '
-                                             'проведете остаток вашей никчемной жизни в бане, не имея малейшей '
-                                             'возможности на освобождение и даже на беглый взор в сторону котов.',
+                                     message='Не материтесь, пожалуйста!',
                                      random_id=random.randint(0, 2 ** 64),
                                      keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
                     ids_data[from_id]['profanity'] += 1
@@ -65,6 +63,7 @@ def main():
                                      keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
                     vk.messages.markAsImportantConversation(peer_id=from_id, important=1)
 
+            # checking running commands
             elif ids_data[from_id]["test_active"]:
                 test.run_test((message_text, from_id), vk, ids_data)
 
@@ -75,6 +74,7 @@ def main():
                 translator.translate(ids_data, from_id, vk, message_text)
 
             else:
+                # check for commands
                 try:
                     if 'help' in message_text:
                         vk.messages.send(user_id=from_id,

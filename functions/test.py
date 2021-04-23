@@ -3,6 +3,7 @@ import num2words
 from functions import keyboards, fallback
 
 
+# greeting message of test
 def start(from_id, vk):
     vk.messages.send(user_id=from_id,
                      message="Добро пожаловать в тест про котов!\nТест начинается! "
@@ -18,6 +19,7 @@ def ask(ids_data, from_id, vk, question):
     ids_data[from_id]['test_question'] += 1
 
 
+# checking the answer function
 def check(ids_data, from_id, message_text, vk, correct_answer, result_on_correct, result_on_wrong):
     try:
         if correct_answer in message_text or num2words.num2words(int(correct_answer), lang='ru') in message_text:
@@ -35,6 +37,7 @@ def check(ids_data, from_id, message_text, vk, correct_answer, result_on_correct
                          random_id=random.randint(0, 2 ** 64))
 
 
+# farewell function
 def end(ids_data, from_id, vk):
     ids_data[from_id]['test_active'] = False
     ids_data[from_id]['test_question'] = 0
@@ -61,6 +64,7 @@ def end(ids_data, from_id, vk):
     ids_data[from_id]['score'] = 0
 
 
+# special checking for fallback function
 def check_fallback(message_text, ids_data, from_id, vk):
     if "выход" in message_text:
         fallback.fallback(ids_data, from_id, vk, ("test_active",))
@@ -70,6 +74,7 @@ def check_fallback(message_text, ids_data, from_id, vk):
     return True
 
 
+# main test function
 def run_test(message_data, vk, ids_data):
     message_text = message_data[0]
     from_id = message_data[1]

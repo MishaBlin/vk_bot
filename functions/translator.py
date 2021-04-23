@@ -2,9 +2,11 @@ import random
 import traceback
 from functions import fallback, keyboards
 
+# translation dict
 cat_dict = ['мяу', 'миу', 'мряу', 'мяфк', 'мрр', 'мяв']
 
 
+# main translator function
 def translate(ids_data, from_id, vk, message_text):
     if not ids_data[from_id]['first_run']:
         try:

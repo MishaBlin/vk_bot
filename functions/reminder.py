@@ -6,6 +6,7 @@ from functions import keyboards, fallback
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
+# getting times from message
 def get_times(message_text, ids_data, from_id):
     times = message_text.strip(' ./?,!@#$%^&*()_-').split(', ')
     another_times = message_text.split(',')
@@ -17,6 +18,7 @@ def get_times(message_text, ids_data, from_id):
         return None
 
 
+# remind job
 def remind(from_id, ids_data, vk):
     vk.messages.send(user_id=from_id,
                      message="Напоминание!\nВремя покормить кота!",
@@ -25,6 +27,7 @@ def remind(from_id, ids_data, vk):
     print(f"sent to {from_id} at {datetime.datetime.now()}")
 
 
+# creating reminder function
 def create_reminder(from_id, message_text, ids_data, vk):
     if ids_data[from_id]['creation']:
         try:
@@ -89,6 +92,7 @@ def create_reminder(from_id, message_text, ids_data, vk):
                          keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
 
 
+# getting existing reminders
 def get_reminders(ids_data, from_id):
     data = ids_data[from_id]['reminders']
     if data:
@@ -99,6 +103,7 @@ def get_reminders(ids_data, from_id):
     return "У Вас нет напоминаний."
 
 
+# deleting reminders function
 def deleting_reminders(ids_data, from_id, message_text, vk):
     try:
         if ids_data[from_id]['deleting_reminders']:
@@ -136,6 +141,7 @@ def deleting_reminders(ids_data, from_id, message_text, vk):
                          keyboard=keyboards.new_keyboard(from_id, ids_data).get_keyboard())
 
 
+# main panel of reminder
 def manage(message_data, ids_data, vk):
     message_text = message_data[0]
     from_id = message_data[1]
